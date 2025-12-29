@@ -1,0 +1,46 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18, 20]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run build
+        run: npm run build
+
+      - name: Check TypeScript compilation
+        run: npx tsc --noEmit
+
+      - name: Package npm module
+        run: npm pack
+        if: matrix.node-version == 20
+
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v4
+        if: matrix.node-version == 20
+        with:
+          name: npm-package
+          path: "*.tgz"
+          retention-days: 7

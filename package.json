@@ -1,0 +1,64 @@
+{
+  "name": "playwright-ms-auth",
+  "version": "1.0.0",
+  "description": "Flexible authentication framework for Playwright tests supporting password and certificate auth with multiple credential providers",
+  "type": "module",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "import": "./lib/index.js",
+      "default": "./lib/index.js"
+    }
+  },
+  "bin": {
+    "ms-auth": "./bin/ms-auth"
+  },
+  "files": [
+    "lib",
+    "bin",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf lib",
+    "prepublishOnly": "npm run clean && npm run build",
+    "test": "playwright test"
+  },
+  "keywords": [
+    "playwright",
+    "authentication",
+    "microsoft",
+    "entra",
+    "azure",
+    "keyvault",
+    "certificate",
+    "password",
+    "testing"
+  ],
+  "author": "Deepak Kamboj",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/deepakkamboj/playwright-ms-auth.git"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.44.1",
+    "@types/node": "^20.12.6",
+    "rimraf": "^5.0.0",
+    "typescript": "^5.4.4"
+  },
+  "dependencies": {
+    "@azure/keyvault-secrets": "^4.8.0",
+    "@azure/identity": "^4.2.1",
+    "commander": "^11.0.0"
+  },
+  "peerDependencies": {
+    "@playwright/test": "^1.40.1"
+  }
+}

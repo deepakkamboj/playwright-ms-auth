@@ -1,0 +1,14 @@
+node_modules/
+lib/
+*.log
+.env
+*.tsbuildinfo
+.DS_Store
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+screenshots/
+*.pfx
+*.p12
+*.pem
