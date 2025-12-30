@@ -13,7 +13,7 @@
 
 A robust, production-ready authentication framework that simplifies Microsoft identity integration in Playwright test suites. Built with the Abstract Factory pattern, it supports both password and certificate-based authentication across multiple credential providers including Azure KeyVault, local files, environment variables, and GitHub Secrets.
 
-Perfect for enterprise test automation requiring secure, reusable authentication flows with multi-region support and smart session caching.
+Perfect for enterprise test automation requiring secure, reusable authentication flows with multi-region support and smart session caching. Get started in seconds with just email and password, or use enterprise-grade providers like Azure KeyVault for production.
 
 ## Tech Stack
 
@@ -41,11 +41,12 @@ Perfect for enterprise test automation requiring secure, reusable authentication
 - 🏭 **Abstract Factory Pattern**: Easily extensible credential provider system
 - ☁️ **Multiple Providers**: Azure KeyVault, Local File, Environment Variables, GitHub Secrets
 - 🌍 **Multi-Region Support**: Works with different Microsoft Entra endpoints
-- 🔧 **CLI Tool**: Full-featured command-line interface
+- 🔧 **CLI Tool**: Full-featured command-line interface with direct password support
 - 🌳 **Environment Variables**: Complete configuration via environment variables
 - 💾 **Smart Caching**: Automatic storage state management with expiration
 - 📝 **TypeScript**: Full type safety and IntelliSense support
 - 🐛 **Debug Logging**: Comprehensive logging for troubleshooting
+- ⚡ **Zero Config for Simple Cases**: Just email and password to get started
 
 ## Installation
 
@@ -58,7 +59,14 @@ npm install playwright-ms-auth
 ### Using CLI
 
 ```bash
-# Authenticate with Azure KeyVault
+# Simple password authentication (for testing/development)
+npx ms-auth login \
+  --url https://your-app.com \
+  --email user@company.com \
+  --password "your-password" \
+  --debug
+
+# Authenticate with Azure KeyVault (recommended for production)
 npx ms-auth login \
   --url https://your-app.com \
   --email user@company.com \
@@ -166,7 +174,7 @@ const config: MsAuthConfig = {
 
 ### Environment Variables
 
-Read credentials directly from environment variables.
+Read credentials directly from environment variables. **Also used when passing `--password` via CLI.**
 
 ```typescript
 const config: MsAuthConfig = {
@@ -179,9 +187,29 @@ const config: MsAuthConfig = {
 };
 ```
 
+**CLI Usage:**
+
+```bash
+# Direct password (automatically uses environment provider)
+npx ms-auth login \
+  --url https://your-app.com \
+  --email user@company.com \
+  --password "your-password"
+
+# Or use environment variable
+export MY_PASSWORD_VAR="your-password"
+npx ms-auth login \
+  --url https://your-app.com \
+  --email user@company.com \
+  --credential-provider environment \
+  --env-variable MY_PASSWORD_VAR
+```
+
 **Environment Variables:**
 
 - `MS_AUTH_ENV_VARIABLE_NAME`
+
+⚠️ **Security Note**: Using `--password` directly in CLI is not recommended for production. Use Azure KeyVault or other secure providers instead.
 
 ### GitHub Secrets
 
@@ -213,11 +241,20 @@ All configuration can be provided via environment variables. Run `npx ms-auth en
 
 - `MS_AUTH_EMAIL` - User email address
 - `MS_AUTH_CREDENTIAL_TYPE` - `password` or `certificate`
-- `MS_AUTH_CREDENTIAL_PROVIDER` - Provider type
+- `MS_AUTH_CREDENTIAL_PROVIDER` - Provider type (auto-set to `environment` when using `--password`)
 - `MS_AUTH_OUTPUT_DIR` - Directory for storage state files
 - `MS_AUTH_LOGIN_ENDPOINT` - Entra endpoint (default: `login.microsoftonline.com`)
 - `MS_AUTH_STORAGE_STATE_EXPIRATION` - Hours until state expires (default: 24)
 - `SYSTEM_DEBUG` - Enable debug logging (`true`/`false`)
+
+### Quick Reference
+
+| Use Case                  | Command                                                                                                                                        |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Development/Testing**   | `npx ms-auth login --url <url> --email <email> --password <pwd>`                                                                               |
+| **Production (KeyVault)** | `npx ms-auth login --url <url> --email <email> --credential-provider azure-keyvault --keyvault-endpoint <endpoint> --keyvault-secret <secret>` |
+| **Certificate Auth**      | `npx ms-auth login --url <url> --email <email> --credential-type certificate --credential-provider local-file --local-file <path>`             |
+| **Environment Var**       | `npx ms-auth login --url <url> --email <email> --credential-provider environment --env-variable MY_VAR`                                        |
 
 ## Architecture
 

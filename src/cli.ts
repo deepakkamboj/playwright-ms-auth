@@ -45,6 +45,10 @@ program
     `Environment variable name (or set ${EnvVars.ENV_VARIABLE_NAME})`
   )
   .option(
+    "--password <password>",
+    `Password for authentication (not recommended for production, use credential providers instead)`
+  )
+  .option(
     "--github-repo <repo>",
     `GitHub repository owner/repo (or set ${EnvVars.GITHUB_REPOSITORY})`
   )
@@ -71,8 +75,16 @@ program
       if (options.email) process.env[EnvVars.EMAIL] = options.email;
       if (options.credentialType)
         process.env[EnvVars.CREDENTIAL_TYPE] = options.credentialType;
-      if (options.credentialProvider)
+
+      // Handle password option - automatically set provider to environment
+      if (options.password) {
+        process.env[EnvVars.CREDENTIAL_PROVIDER] = "environment";
+        process.env[EnvVars.ENV_VARIABLE_NAME] = "MS_AUTH_PASSWORD_INLINE";
+        process.env["MS_AUTH_PASSWORD_INLINE"] = options.password;
+      } else if (options.credentialProvider) {
         process.env[EnvVars.CREDENTIAL_PROVIDER] = options.credentialProvider;
+      }
+
       if (options.keyvaultEndpoint)
         process.env[EnvVars.KEYVAULT_ENDPOINT] = options.keyvaultEndpoint;
       if (options.keyvaultSecret)
