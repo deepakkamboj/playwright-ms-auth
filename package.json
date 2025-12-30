@@ -42,8 +42,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/deepakkamboj/playwright-ms-auth.git"
+    "url": "git+https://github.com/deepakkamboj/playwright-ms-auth.git"
   },
+  "bugs": {
+    "url": "https://github.com/deepakkamboj/playwright-ms-auth/issues"
+  },
+  "homepage": "https://github.com/deepakkamboj/playwright-ms-auth#readme",
   "engines": {
     "node": ">=18"
   },
