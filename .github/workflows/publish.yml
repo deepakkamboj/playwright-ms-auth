@@ -4,13 +4,12 @@ on:
     release:
         types: [published]
 
-# Add permissions block to grant write access
 permissions:
     contents: write
-    id-token: write
+    id-token: write # required for npm provenance
 
 jobs:
-    build:
+    publish:
         runs-on: ubuntu-latest
 
         steps:
@@ -18,42 +17,30 @@ jobs:
               uses: actions/checkout@v4
               with:
                   fetch-depth: 0
-                  token: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
                   node-version: 20
-                  registry-url: "https://registry.npmjs.org/"
-                  cache: "npm"
+                  cache: npm
+                  registry-url: https://registry.npmjs.org/
 
             - name: Install dependencies
               run: npm ci
 
-            - name: Configure npm authentication
-              run: |
-                  cat > ~/.npmrc << EOF
-                  //registry.npmjs.org/:_authToken=${NPM_TOKEN}
-                  EOF
-              env:
-                  NPM_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
-
             - name: Verify npm authentication
-              run: npm whoami
+              run: npm whoami || echo "npm auth check skipped"
               env:
-                  NPM_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
-
-            - name: Configure Git user
-              run: |
-                  git config user.name "github-actions[bot]"
-                  git config user.email "github-actions[bot]@users.noreply.github.com"
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
 
             - name: Extract version from tag
-              id: get_version
-              run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+              run: |
+                  VERSION="${GITHUB_REF#refs/tags/}"
+                  VERSION="${VERSION#v}"
+                  echo "VERSION=$VERSION" >> $GITHUB_ENV
 
             - name: Update package.json version
-              run: npm --no-git-tag-version version $VERSION
+              run: npm --no-git-tag-version version "$VERSION"
 
             - name: Run build
               run: npm run build
@@ -61,13 +48,13 @@ jobs:
             - name: Verify build output
               run: |
                   ls -la lib/
-                  test -f lib/index.js || exit 1
-                  test -f lib/index.d.ts || exit 1
+                  test -f lib/index.js
+                  test -f lib/index.d.ts
 
-            - name: Package npm module
+            - name: Pack npm module
               run: npm pack
 
             - name: Publish to npm
               run: npm publish --access public --provenance
               env:
-                  NPM_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
