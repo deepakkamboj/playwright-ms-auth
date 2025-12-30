@@ -33,7 +33,9 @@ jobs:
             - name: Configure npm authentication
               run: |
                   echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
-                  cat ~/.npmrc
+              
+            - name: Verify npm authentication
+              run: npm whoami
 
             - name: Configure Git user
               run: |
