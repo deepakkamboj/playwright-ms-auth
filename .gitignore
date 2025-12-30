@@ -2,6 +2,7 @@ node_modules/
 lib/
 *.log
 .env
+examples/.env
 *.tsbuildinfo
 .DS_Store
 coverage/

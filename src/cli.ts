@@ -60,6 +60,7 @@ program
     "--output-dir <dir>",
     `Output directory for storage state (or set ${EnvVars.OUTPUT_DIR})`
   )
+  .option("--headful", "Run browser in headful mode (visible browser window)")
   .option("--debug", "Enable debug logging")
   .action(async (options) => {
     try {
@@ -102,11 +103,16 @@ program
 
       // Load configuration from environment
       const config = loadConfigFromEnv();
+
+      // Set headless mode based on --headful flag
+      config.headless = !options.headful; // If --headful is set, headless = false
+
       validateConfig(config);
 
       log(`[CLI] Email: ${config.email}`);
       log(`[CLI] Credential type: ${config.credentialType}`);
       log(`[CLI] Credential provider: ${config.credentialProvider}`);
+      log(`[CLI] Browser mode: ${config.headless ? "headless" : "headful"}`);
 
       // Perform authentication
       await authenticate(config, options.url);

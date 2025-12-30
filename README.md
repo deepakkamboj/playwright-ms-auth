@@ -63,8 +63,14 @@ npm install playwright-ms-auth
 npx ms-auth login \
   --url https://your-app.com \
   --email user@company.com \
+  --password "your-password"
+
+# Run in headful mode (visible browser window)
+npx ms-auth login \
+  --url https://your-app.com \
+  --email user@company.com \
   --password "your-password" \
-  --debug
+  --headful
 
 # Authenticate with Azure KeyVault (recommended for production)
 npx ms-auth login \
@@ -72,8 +78,7 @@ npx ms-auth login \
   --email user@company.com \
   --credential-provider azure-keyvault \
   --keyvault-endpoint https://your-vault.vault.azure.net \
-  --keyvault-secret your-secret-name \
-  --debug
+  --keyvault-secret your-secret-name
 
 # Authenticate with local certificate file
 npx ms-auth login \
@@ -242,10 +247,35 @@ All configuration can be provided via environment variables. Run `npx ms-auth en
 - `MS_AUTH_EMAIL` - User email address
 - `MS_AUTH_CREDENTIAL_TYPE` - `password` or `certificate`
 - `MS_AUTH_CREDENTIAL_PROVIDER` - Provider type (auto-set to `environment` when using `--password`)
-- `MS_AUTH_OUTPUT_DIR` - Directory for storage state files
+- `MS_AUTH_OUTPUT_DIR` - Directory for storage state files (defaults to project root)
 - `MS_AUTH_LOGIN_ENDPOINT` - Entra endpoint (default: `login.microsoftonline.com`)
 - `MS_AUTH_STORAGE_STATE_EXPIRATION` - Hours until state expires (default: 24)
-- `SYSTEM_DEBUG` - Enable debug logging (`true`/`false`)
+- `SYSTEM_DEBUG` - Enable detailed debug logging (`true`/`false`, default: `false`)
+
+### Debugging
+
+Enable detailed logging to troubleshoot authentication issues:
+
+```bash
+# Enable debug logging via environment variable
+export SYSTEM_DEBUG=true
+npx ms-auth login --url https://your-app.com --email user@company.com --password "your-password"
+
+# Or inline
+SYSTEM_DEBUG=true npx ms-auth login --url https://your-app.com --email user@company.com --password "your-password"
+
+# In .env file
+SYSTEM_DEBUG=true
+```
+
+When `SYSTEM_DEBUG=true`, you'll see detailed logs including:
+
+- Authentication flow steps
+- Credential provider operations
+- Browser launch parameters
+- Storage state paths
+- Screenshot locations
+- URL redirects and navigation events
 
 ### Quick Reference
 
@@ -511,12 +541,36 @@ playwright-ms-auth/
 │       ├── GitHubSecretsProvider.ts       # GitHub secrets implementation
 │       ├── CredentialProviderFactory.ts   # Factory pattern
 │       └── index.ts                       # Provider exports
+├── examples/
+│   ├── msLogin.ts            # Example authentication helper
+│   ├── .env.example          # Environment template
+│   ├── package.json          # Example dependencies
+│   └── README.md             # Example documentation
 ├── bin/
 │   └── ms-auth               # CLI executable
 ├── package.json
 ├── tsconfig.json
 └── README.md
 ```
+
+## Examples
+
+Check out the [`examples/`](./examples) directory for a complete working example:
+
+```bash
+cd examples
+npm install
+npm run login
+```
+
+The example includes:
+
+- 📝 Ready-to-use authentication helper (`msLogin.ts`)
+- 🔧 Pre-configured environment file
+- 📚 Complete documentation
+- ⚡ NPM scripts for easy execution
+
+See [`examples/README.md`](./examples/README.md) for details.
 
 ## Abstract Factory Pattern
 
@@ -555,6 +609,173 @@ class MyCustomProvider extends CredentialProvider {
     };
   }
 }
+```
+
+## Troubleshooting & FAQ
+
+### Authentication Issues
+
+**Q: Browser is not visible when using `--headful` flag**
+
+A: Make sure you're running the latest version and that Microsoft Edge is installed. The package uses Edge for better Windows compatibility.
+
+```bash
+# Verify Edge channel is working
+npx playwright install msedge
+```
+
+**Q: Authentication times out waiting for redirect**
+
+A: This usually happens when SharePoint redirects to a different page after login. The package automatically handles redirects to any page on the same domain. Enable debug logging to see the actual redirect:
+
+```bash
+SYSTEM_DEBUG=true npx ms-auth login --url https://your-site.com --email user@company.com --password "pwd"
+```
+
+**Q: "page.waitForURL: Timeout exceeded" error**
+
+A: The authentication may have succeeded but redirected to a different page than expected. Check the logs for "navigated to" message. This is normal for SharePoint sites that redirect to home pages.
+
+**Q: Screenshot saved to wrong location**
+
+A: Screenshots are saved to `<project-root>/screenshots/` by default. To change this, set `MS_AUTH_OUTPUT_DIR`:
+
+```bash
+export MS_AUTH_OUTPUT_DIR=/path/to/custom/dir
+```
+
+### Storage State Issues
+
+**Q: Where are storage state files saved?**
+
+A: By default, storage state files are saved to `<project-root>/.playwright-ms-auth/state-{email}.json`. You can customize this with the `MS_AUTH_OUTPUT_DIR` environment variable.
+
+**Q: How long do storage states last?**
+
+A: Storage states expire after 24 hours by default. Configure with `MS_AUTH_STORAGE_STATE_EXPIRATION` (in hours):
+
+```bash
+export MS_AUTH_STORAGE_STATE_EXPIRATION=48  # 48 hours
+```
+
+**Q: How do I force re-authentication?**
+
+A: Delete the storage state file or use the CLI:
+
+```bash
+# Find and delete the storage state file
+rm .playwright-ms-auth/state-your-email@company.com.json
+
+# Or use clearAuth from examples
+npm run clear-auth
+```
+
+### Debugging
+
+**Q: How do I enable detailed logging?**
+
+A: Set `SYSTEM_DEBUG=true` to see detailed authentication flow:
+
+```bash
+# Temporary (command line)
+SYSTEM_DEBUG=true npx ms-auth login --url https://site.com --email user@company.com --password "pwd"
+
+# Permanent (in .env file)
+SYSTEM_DEBUG=true
+```
+
+Debug logs include:
+
+- Credential provider operations
+- Browser launch parameters (headless/headful)
+- Storage state paths
+- Screenshot locations
+- Navigation events and redirects
+- Authentication flow steps
+
+**Q: Authentication succeeds but I get errors in my tests**
+
+A: Verify the storage state file exists and check its timestamp:
+
+```bash
+# Check if file exists and when it was created
+ls -la .playwright-ms-auth/state-*.json
+
+# View file contents (check cookies)
+cat .playwright-ms-auth/state-*.json
+```
+
+**Q: Getting "Cannot find module" errors**
+
+A: Make sure to rebuild after making changes:
+
+```bash
+npm run build
+
+# If using examples directory
+cd examples
+rm -rf node_modules/playwright-ms-auth
+npm install
+```
+
+### Certificate Authentication
+
+**Q: Certificate authentication fails with validation error**
+
+A: Ensure:
+
+1. Certificate is in PFX/P12 format
+2. Certificate is not expired
+3. Certificate password is correct (if encrypted)
+4. Certificate is trusted by the Entra tenant
+
+**Q: How do I convert PEM to PFX?**
+
+```bash
+openssl pkcs12 -export -out cert.pfx -inkey private.key -in certificate.crt
+```
+
+### Production Issues
+
+**Q: Should I use `--password` flag in production?**
+
+A: No. Use Azure KeyVault or other secure credential providers for production:
+
+```bash
+# Production (Azure KeyVault)
+npx ms-auth login \
+  --url https://your-site.com \
+  --email user@company.com \
+  --credential-provider azure-keyvault \
+  --keyvault-endpoint https://vault.vault.azure.net \
+  --keyvault-secret secret-name
+```
+
+**Q: How do I handle multiple environments?**
+
+A: Use different `.env` files or environment-specific configuration:
+
+```bash
+# Development
+SYSTEM_DEBUG=true npm run login
+
+# Production
+MS_AUTH_CREDENTIAL_PROVIDER=azure-keyvault npm run login
+```
+
+**Q: Can I use this in CI/CD pipelines?**
+
+A: Yes! Use GitHub Secrets or Azure KeyVault providers:
+
+```yaml
+# GitHub Actions example
+- name: Authenticate
+  env:
+    MS_AUTH_EMAIL: ${{ secrets.MS_AUTH_EMAIL }}
+    MS_USER_PASSWORD: ${{ secrets.MS_USER_PASSWORD }}
+    MS_AUTH_CREDENTIAL_PROVIDER: environment
+    MS_AUTH_ENV_VARIABLE_NAME: MS_USER_PASSWORD
+  run: npx ms-auth login --url https://your-site.com
 ```
 
 ## License

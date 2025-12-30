@@ -1,0 +1,20 @@
+{
+  "name": "playwright-ms-auth-examples",
+  "version": "1.0.0",
+  "description": "Examples for playwright-ms-auth package",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "login": "tsx msLogin.ts",
+    "clear-auth": "node -e \"require('./msLogin').clearAuth()\""
+  },
+  "dependencies": {
+    "playwright-ms-auth": "file:..",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.6",
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.4"
+  }
+}

@@ -38,6 +38,9 @@ export async function authenticate(
   log(`[MsAuth] Starting authentication for '${config.email}'`);
   log(`[MsAuth] Credential provider: ${config.credentialProvider}`);
   log(`[MsAuth] Credential type: ${config.credentialType}`);
+  if (config.headless === false) {
+    log(`[MsAuth] Running in headful mode (visible browser)`);
+  }
 
   // Create credential provider and retrieve credential
   const provider = CredentialProviderFactory.createProvider(
@@ -55,10 +58,24 @@ export async function authenticate(
   }
 
   // Launch browser and perform authentication
+  const headlessMode = config.headless !== false;
+  console.log(
+    `[CONSOLE] About to launch browser with headless=${headlessMode} (config.headless=${config.headless})`
+  );
+  log(
+    `[MsAuth] About to launch browser with headless=${headlessMode} (config.headless=${config.headless})`
+  );
+
   const browser = await chromium.launch({
-    headless: process.env.HEADLESS !== "false",
+    headless: headlessMode,
+    channel: "msedge", // Use Microsoft Edge for better Windows compatibility
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
+
+  console.log(
+    `[CONSOLE] Browser launched successfully with headless=${headlessMode}`
+  );
+  log(`[MsAuth] Browser launched successfully`);
 
   try {
     await performAuthenticationFlow(
@@ -131,9 +148,23 @@ async function performAuthenticationFlow(
     // Handle "Stay signed in?" prompt
     await handleStaySignedIn(page);
 
-    // Wait for redirect to target URL
-    log(`[MsAuth] Waiting for redirect to target URL`);
-    await page.waitForURL(targetUrl, { timeout: 30000 });
+    // Wait for redirect to target URL or any page on the same domain
+    log(`[MsAuth] Waiting for redirect to target domain`);
+    const targetDomain = new URL(targetUrl).origin;
+
+    try {
+      // Try to wait for the exact URL first
+      await page.waitForURL(targetUrl, { timeout: 5000 });
+    } catch {
+      // If exact URL doesn't match, check if we're on the same domain (authentication succeeded)
+      const currentUrl = page.url();
+      if (!currentUrl.startsWith(targetDomain)) {
+        throw new Error(
+          `Authentication may have failed. Expected to be on ${targetDomain}, but got ${currentUrl}`
+        );
+      }
+      log(`[MsAuth] Redirected to ${currentUrl} (authentication successful)`);
+    }
 
     // Give it a bit more time for cookies to settle
     await page.waitForTimeout(2000);

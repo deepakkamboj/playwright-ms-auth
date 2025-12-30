@@ -3,10 +3,14 @@
  */
 
 /** Supported credential types */
-export type CredentialType = 'password' | 'certificate';
+export type CredentialType = "password" | "certificate";
 
 /** Supported credential provider types */
-export type CredentialProviderType = 'azure-keyvault' | 'local-file' | 'environment' | 'github-secrets';
+export type CredentialProviderType =
+  | "azure-keyvault"
+  | "local-file"
+  | "environment"
+  | "github-secrets";
 
 /** Base configuration for authentication */
 export interface AuthConfig {
@@ -27,6 +31,9 @@ export interface AuthConfig {
 
   /** Entra login endpoint (default: login.microsoftonline.com) */
   loginEndpoint?: string;
+
+  /** Run browser in headless mode (default: true) */
+  headless?: boolean;
 }
 
 /** Configuration for Azure KeyVault credential provider */
@@ -72,7 +79,11 @@ export interface GitHubSecretsConfig {
 }
 
 /** Union type for all provider configurations */
-export type ProviderConfig = AzureKeyVaultConfig | LocalFileConfig | EnvironmentConfig | GitHubSecretsConfig;
+export type ProviderConfig =
+  | AzureKeyVaultConfig
+  | LocalFileConfig
+  | EnvironmentConfig
+  | GitHubSecretsConfig;
 
 /** Complete authentication configuration */
 export interface MsAuthConfig extends AuthConfig {
@@ -83,49 +94,49 @@ export interface MsAuthConfig extends AuthConfig {
 /** CLI environment variable names */
 export const EnvVars = {
   /** User email */
-  EMAIL: 'MS_AUTH_EMAIL',
+  EMAIL: "MS_AUTH_EMAIL",
 
   /** Credential type (password|certificate) */
-  CREDENTIAL_TYPE: 'MS_AUTH_CREDENTIAL_TYPE',
+  CREDENTIAL_TYPE: "MS_AUTH_CREDENTIAL_TYPE",
 
   /** Credential provider type */
-  CREDENTIAL_PROVIDER: 'MS_AUTH_CREDENTIAL_PROVIDER',
+  CREDENTIAL_PROVIDER: "MS_AUTH_CREDENTIAL_PROVIDER",
 
   /** Azure KeyVault endpoint */
-  KEYVAULT_ENDPOINT: 'MS_AUTH_KEYVAULT_ENDPOINT',
+  KEYVAULT_ENDPOINT: "MS_AUTH_KEYVAULT_ENDPOINT",
 
   /** KeyVault secret name */
-  KEYVAULT_SECRET_NAME: 'MS_AUTH_KEYVAULT_SECRET_NAME',
+  KEYVAULT_SECRET_NAME: "MS_AUTH_KEYVAULT_SECRET_NAME",
 
   /** Local file path */
-  LOCAL_FILE_PATH: 'MS_AUTH_LOCAL_FILE_PATH',
+  LOCAL_FILE_PATH: "MS_AUTH_LOCAL_FILE_PATH",
 
   /** Certificate password */
-  CERTIFICATE_PASSWORD: 'MS_AUTH_CERTIFICATE_PASSWORD',
+  CERTIFICATE_PASSWORD: "MS_AUTH_CERTIFICATE_PASSWORD",
 
   /** Environment variable name for credential */
-  ENV_VARIABLE_NAME: 'MS_AUTH_ENV_VARIABLE_NAME',
+  ENV_VARIABLE_NAME: "MS_AUTH_ENV_VARIABLE_NAME",
 
   /** Output directory for storage state */
-  OUTPUT_DIR: 'MS_AUTH_OUTPUT_DIR',
+  OUTPUT_DIR: "MS_AUTH_OUTPUT_DIR",
 
   /** Entra login endpoint */
-  LOGIN_ENDPOINT: 'MS_AUTH_LOGIN_ENDPOINT',
+  LOGIN_ENDPOINT: "MS_AUTH_LOGIN_ENDPOINT",
 
   /** Storage state expiration hours */
-  STORAGE_STATE_EXPIRATION: 'MS_AUTH_STORAGE_STATE_EXPIRATION',
+  STORAGE_STATE_EXPIRATION: "MS_AUTH_STORAGE_STATE_EXPIRATION",
 
   /** GitHub repository */
-  GITHUB_REPOSITORY: 'MS_AUTH_GITHUB_REPOSITORY',
+  GITHUB_REPOSITORY: "MS_AUTH_GITHUB_REPOSITORY",
 
   /** GitHub secret name */
-  GITHUB_SECRET_NAME: 'MS_AUTH_GITHUB_SECRET_NAME',
+  GITHUB_SECRET_NAME: "MS_AUTH_GITHUB_SECRET_NAME",
 
   /** GitHub token */
-  GITHUB_TOKEN: 'MS_AUTH_GITHUB_TOKEN',
+  GITHUB_TOKEN: "MS_AUTH_GITHUB_TOKEN",
 
   /** Debug logging */
-  SYSTEM_DEBUG: 'SYSTEM_DEBUG',
+  SYSTEM_DEBUG: "SYSTEM_DEBUG",
 } as const;
 
 /** Result of credential retrieval */

@@ -1,8 +1,34 @@
-import { resolve, join } from "node:path";
+import { resolve, join, dirname, parse } from "node:path";
 import { homedir } from "node:os";
 import { mkdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { EnvVars } from "./types";
+
+/**
+ * Find the project root by looking for package.json file
+ * @param startDir - The directory to start searching from
+ * @returns The project root directory
+ */
+function findProjectRoot(startDir: string): string {
+  let currentDir = startDir;
+
+  while (currentDir !== parse(currentDir).root) {
+    if (existsSync(join(currentDir, "package.json"))) {
+      return currentDir;
+    }
+    currentDir = dirname(currentDir);
+  }
+
+  // Fall back to the current working directory if project root isn't found
+  return process.cwd();
+}
+
+/**
+ * Get the calling project's root directory
+ */
+export function getProjectRoot(): string {
+  return findProjectRoot(process.cwd());
+}
 
 /**
  * Logging function that checks SYSTEM_DEBUG at runtime
@@ -17,13 +43,16 @@ export function log(message: string): void {
 /**
  * Get the base directory for authentication files
  * Can be overridden via MS_AUTH_OUTPUT_DIR environment variable
+ * Defaults to project root/.playwright-ms-auth
  */
 export function getAuthBaseDir(): string {
   const customDir = process.env[EnvVars.OUTPUT_DIR];
   if (customDir) {
     return resolve(customDir);
   }
-  return resolve(homedir(), ".playwright-ms-auth");
+  // Use project root instead of user home directory
+  const projectRoot = getProjectRoot();
+  return resolve(projectRoot, ".playwright-ms-auth");
 }
 
 /**
@@ -52,11 +81,16 @@ export function getAuthScreenshotPath(
   status: "success" | "failed"
 ): string {
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-  const authDir = getAuthBaseDir();
   const sanitizedEmail = email.replace(/[^a-zA-Z0-9@.-]/g, "_");
+
+  // If MS_AUTH_OUTPUT_DIR is set, use that directory
+  // Otherwise find the calling project's root directory
+  const outputDir = process.env[EnvVars.OUTPUT_DIR];
+  const baseDir = outputDir ? resolve(outputDir) : getProjectRoot();
+  const screenshotDir = join(baseDir, "screenshots");
+
   return join(
-    authDir,
-    "screenshots",
+    screenshotDir,
     `auth-${sanitizedEmail}-${status}-${timestamp}.png`
   );
 }
