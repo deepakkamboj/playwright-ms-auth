@@ -13,3 +13,4 @@ screenshots/
 *.pfx
 *.p12
 *.pem
+.playwright-ms-auth/

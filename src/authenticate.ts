@@ -151,16 +151,26 @@ async function performAuthenticationFlow(
     // Wait for redirect to target URL or any page on the same domain
     log(`[MsAuth] Waiting for redirect to target domain`);
     const targetDomain = new URL(targetUrl).origin;
+    const targetBaseDomain = new URL(targetUrl).hostname.split('.').slice(-3).join('.'); // e.g., "test.powerapps.com"
 
     try {
       // Try to wait for the exact URL first
       await page.waitForURL(targetUrl, { timeout: 5000 });
     } catch {
-      // If exact URL doesn't match, check if we're on the same domain (authentication succeeded)
+      // If exact URL doesn't match, check if we're on the same base domain or at least off the login page
       const currentUrl = page.url();
-      if (!currentUrl.startsWith(targetDomain)) {
+      const currentHostname = new URL(currentUrl).hostname;
+      const currentBaseDomain = currentHostname.split('.').slice(-3).join('.');
+      
+      // Success if we're on same base domain (e.g., *.test.powerapps.com) or same origin
+      const isOnTargetDomain = currentUrl.startsWith(targetDomain) || currentBaseDomain === targetBaseDomain;
+      // Also success if we're no longer on the login page
+      const loginEndpointHost = config.loginEndpoint || DEFAULT_LOGIN_ENDPOINT;
+      const isOffLoginPage = !currentHostname.includes(loginEndpointHost);
+      
+      if (!isOnTargetDomain && !isOffLoginPage) {
         throw new Error(
-          `Authentication may have failed. Expected to be on ${targetDomain}, but got ${currentUrl}`
+          `Authentication may have failed. Expected to be on ${targetDomain} or similar, but got ${currentUrl}`
         );
       }
       log(`[MsAuth] Redirected to ${currentUrl} (authentication successful)`);
@@ -281,6 +291,9 @@ async function handleCertificateAuth(
   }
 
   log(`[MsAuth] Certificate authentication successful`);
+
+  // Wait a bit for any post-auth UI to load
+  await page.waitForTimeout(2000);
 }
 
 /**
@@ -324,11 +337,35 @@ async function handlePasswordAuth(
  * Handle "Stay signed in?" prompt
  */
 async function handleStaySignedIn(page: Page): Promise<void> {
-  const staySignedIn = page.getByRole("heading", { name: "Stay signed in?" });
+  log(`[MsAuth] Checking for 'Stay signed in?' prompt...`);
+  
+  // Try multiple selectors for better compatibility
+  const staySignedInHeading = page.getByRole("heading", { name: /stay signed in/i });
+  const staySignedInText = page.getByText(/stay signed in/i);
+  const yesButton = page.getByRole("button", { name: /^yes$/i });
+  const noButton = page.getByRole("button", { name: /^no$/i });
 
-  if (await staySignedIn.isVisible({ timeout: 5000 }).catch(() => false)) {
-    log(`[MsAuth] Handling 'Stay signed in?' prompt`);
-    await page.getByRole("button", { name: "Yes" }).click();
+  // Check if the prompt is visible
+  const isPromptVisible = await Promise.race([
+    staySignedInHeading.isVisible({ timeout: 10000 }).catch(() => false),
+    staySignedInText.isVisible({ timeout: 10000 }).catch(() => false),
+  ]);
+
+  if (isPromptVisible) {
+    log(`[MsAuth] 'Stay signed in?' prompt detected - clicking Yes`);
+    
+    // Click Yes button
+    await yesButton.click({ timeout: 5000 }).catch(async () => {
+      log(`[MsAuth] Failed to click Yes button by role, trying alternative selector`);
+      await page.locator('input[type="submit"][value="Yes"]').click();
+    });
+    
+    log(`[MsAuth] Clicked 'Yes' on stay signed in prompt`);
+    
+    // Wait for navigation after clicking
+    await page.waitForTimeout(2000);
+  } else {
+    log(`[MsAuth] No 'Stay signed in?' prompt detected`);
   }
 }
 
