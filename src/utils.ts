@@ -82,12 +82,7 @@ export function getAuthScreenshotPath(
 ): string {
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
   const sanitizedEmail = email.replace(/[^a-zA-Z0-9@.-]/g, "_");
-
-  // If MS_AUTH_OUTPUT_DIR is set, use that directory
-  // Otherwise find the calling project's root directory
-  const outputDir = process.env[EnvVars.OUTPUT_DIR];
-  const baseDir = outputDir ? resolve(outputDir) : getProjectRoot();
-  const screenshotDir = join(baseDir, "screenshots");
+  const screenshotDir = join(getAuthBaseDir(), "screenshots");
 
   return join(
     screenshotDir,
