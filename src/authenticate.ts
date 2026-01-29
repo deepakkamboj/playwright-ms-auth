@@ -254,27 +254,34 @@ async function handleCertificateAuth(
 
   // Wait for certificate authentication to complete
   log(`[MsAuth] Waiting for certificate authentication response`);
-  await waitForCertAuthResponse(page, endpoint);
+  try {
+    await waitForCertAuthResponse(page, endpoint, 60000);
+  } catch (timeoutError) {
+    log(
+      `[MsAuth] ##[warning]Certificate authentication response not detected - this may be okay if auth flow changed`
+    );
+    // Continue anyway - the cert auth might have succeeded without the expected response
+  }
 
   // Check for certificate validation errors
   const certFailure = page.getByRole("heading", {
     name: /Certificate validation failed|We couldn't sign you in with a certificate/i,
   });
 
-  if (await certFailure.isVisible({ timeout: 2000 }).catch(() => false)) {
+  if (await certFailure.isVisible({ timeout: 5000 }).catch(() => false)) {
     const failureText = await certFailure.textContent();
     log(`[MsAuth] ##[error]Certificate authentication failed: ${failureText}`);
 
     // Try to get error details
     const moreDetails = page.getByRole("button", { name: "More details" });
-    if (await moreDetails.isVisible({ timeout: 1000 }).catch(() => false)) {
+    if (await moreDetails.isVisible({ timeout: 5000 }).catch(() => false)) {
       await moreDetails.click();
       await page
         .context()
         .grantPermissions(["clipboard-read"])
         .catch(() => {});
       const copyButton = page.getByRole("button", { name: "Copy" });
-      if (await copyButton.isVisible({ timeout: 1000 }).catch(() => false)) {
+      if (await copyButton.isVisible({ timeout: 5000 }).catch(() => false)) {
         await copyButton.click();
         const errorDetails = await page
           .evaluate("navigator.clipboard.readText()")

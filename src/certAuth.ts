@@ -109,14 +109,18 @@ function doCertAuthPost(request: Request, options: AgentOptions) {
 
 /**
  * Wait for certificate authentication response
+ * @param page The page to wait on
+ * @param endpoint The authentication endpoint
+ * @param timeout Optional timeout in milliseconds (default: 30000)
  */
 export function waitForCertAuthResponse(
   page: Page,
-  endpoint?: string
+  endpoint?: string,
+  timeout: number = 30000
 ): Promise<void> {
   const authEndpoint = endpoint || DEFAULT_AUTH_ENDPOINT;
   const glob = getCertAuthGlob(authEndpoint);
-  return page.waitForResponse(glob).then(() => {});
+  return page.waitForResponse(glob, { timeout }).then(() => {});
 }
 
 /**
