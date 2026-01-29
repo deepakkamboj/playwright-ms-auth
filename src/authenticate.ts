@@ -255,7 +255,7 @@ async function handleCertificateAuth(
   // Wait for certificate authentication to complete
   log(`[MsAuth] Waiting for certificate authentication response`);
   try {
-    await waitForCertAuthResponse(page, endpoint, 60000);
+    await waitForCertAuthResponse(page, endpoint, 10000);
   } catch (timeoutError) {
     log(
       `[MsAuth] ##[warning]Certificate authentication response not detected - this may be okay if auth flow changed`
