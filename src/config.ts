@@ -36,6 +36,12 @@ export function loadConfigFromEnv(): MsAuthConfig {
       ? parseInt(process.env[EnvVars.STORAGE_STATE_EXPIRATION]!)
       : 24,
     loginEndpoint: process.env[EnvVars.LOGIN_ENDPOINT],
+    waitForMsalTokens: process.env[EnvVars.WAIT_FOR_MSAL_TOKENS]
+      ? process.env[EnvVars.WAIT_FOR_MSAL_TOKENS]!.toLowerCase() === "true"
+      : true,
+    msalTokenTimeout: process.env[EnvVars.MSAL_TOKEN_TIMEOUT]
+      ? parseInt(process.env[EnvVars.MSAL_TOKEN_TIMEOUT]!)
+      : 30000,
   };
 }
 

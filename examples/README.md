@@ -104,6 +104,8 @@ Your actual credentials (⚠️ **DO NOT COMMIT THIS FILE**)
 - `MS_AUTH_CREDENTIAL_TYPE` - `password` or `certificate` (default: password)
 - `MS_AUTH_CREDENTIAL_PROVIDER` - Provider type (default: environment)
 - `MS_AUTH_OUTPUT_DIR` - Custom output directory
+- `MS_AUTH_WAIT_FOR_MSAL_TOKENS` - Wait for MSAL tokens (default: true)
+- `MS_AUTH_MSAL_TOKEN_TIMEOUT` - MSAL token timeout in ms (default: 30000)
 - `SYSTEM_DEBUG` - Enable debug logging
 
 ## Security Notes
@@ -131,3 +133,15 @@ Your actual credentials (⚠️ **DO NOT COMMIT THIS FILE**)
 
 - Install dependencies: `npm install playwright-ms-auth dotenv`
 - For TypeScript: `npm install -D tsx @types/node`
+
+**MSAL tokens not found in localStorage:**
+
+- For SPAs like Power Platform, the library automatically waits for MSAL tokens
+- If your app takes longer than 30 seconds, increase the timeout:
+  ```bash
+  MS_AUTH_MSAL_TOKEN_TIMEOUT=60000 npm run login
+  ```
+- Enable debug mode to see which tokens were found:
+  ```bash
+  SYSTEM_DEBUG=true npm run login
+  ```

@@ -34,6 +34,24 @@ export interface AuthConfig {
 
   /** Run browser in headless mode (default: true) */
   headless?: boolean;
+
+  /**
+   * Wait for MSAL tokens in localStorage before saving state (default: true)
+   *
+   * This ensures SPAs have time to initialize MSAL and write tokens to localStorage.
+   * Recommended for Power Platform, SharePoint, and other Microsoft SPAs.
+   *
+   * Set to false to disable waiting (not recommended for SPAs)
+   */
+  waitForMsalTokens?: boolean;
+
+  /**
+   * Maximum time to wait for MSAL tokens in milliseconds (default: 30000)
+   *
+   * Increase this if your SPA takes longer than 30 seconds to initialize MSAL.
+   * Only applies when waitForMsalTokens is true.
+   */
+  msalTokenTimeout?: number;
 }
 
 /** Configuration for Azure KeyVault credential provider */
@@ -137,6 +155,12 @@ export const EnvVars = {
 
   /** Debug logging */
   SYSTEM_DEBUG: "SYSTEM_DEBUG",
+
+  /** Wait for MSAL tokens in localStorage (default: true) */
+  WAIT_FOR_MSAL_TOKENS: "MS_AUTH_WAIT_FOR_MSAL_TOKENS",
+
+  /** Maximum time to wait for MSAL tokens in milliseconds (default: 30000) */
+  MSAL_TOKEN_TIMEOUT: "MS_AUTH_MSAL_TOKEN_TIMEOUT",
 } as const;
 
 /** Result of credential retrieval */

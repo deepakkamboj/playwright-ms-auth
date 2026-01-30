@@ -161,13 +161,13 @@ async function performAuthenticationFlow(
       const currentUrl = page.url();
       const currentHostname = new URL(currentUrl).hostname;
       const currentBaseDomain = currentHostname.split('.').slice(-3).join('.');
-      
+
       // Success if we're on same base domain (e.g., *.test.powerapps.com) or same origin
       const isOnTargetDomain = currentUrl.startsWith(targetDomain) || currentBaseDomain === targetBaseDomain;
       // Also success if we're no longer on the login page
       const loginEndpointHost = config.loginEndpoint || DEFAULT_LOGIN_ENDPOINT;
       const isOffLoginPage = !currentHostname.includes(loginEndpointHost);
-      
+
       if (!isOnTargetDomain && !isOffLoginPage) {
         throw new Error(
           `Authentication may have failed. Expected to be on ${targetDomain} or similar, but got ${currentUrl}`
@@ -176,7 +176,19 @@ async function performAuthenticationFlow(
       log(`[MsAuth] Redirected to ${currentUrl} (authentication successful)`);
     }
 
-    // Give it a bit more time for cookies to settle
+    // Wait for MSAL tokens to be stored in localStorage (if enabled)
+    if (config.waitForMsalTokens !== false) {
+      const timeout = config.msalTokenTimeout || 30000;
+      const tokensFound = await waitForMsalTokens(page, timeout);
+
+      if (tokensFound) {
+        log(`[MsAuth] MSAL tokens detected in localStorage`);
+      } else {
+        log(`[MsAuth] ##[warning]No MSAL tokens found - continuing anyway`);
+      }
+    }
+
+    // Give it a bit more time for any final writes to complete
     await page.waitForTimeout(2000);
 
     // Save storage state
@@ -255,7 +267,7 @@ async function handleCertificateAuth(
   // Wait for certificate authentication to complete
   log(`[MsAuth] Waiting for certificate authentication response`);
   try {
-    await waitForCertAuthResponse(page, endpoint, 10000);
+    await waitForCertAuthResponse(page, endpoint, 60000);
   } catch (timeoutError) {
     log(
       `[MsAuth] ##[warning]Certificate authentication response not detected - this may be okay if auth flow changed`
@@ -338,6 +350,63 @@ async function handlePasswordAuth(
   }
 
   log(`[MsAuth] Password authentication successful`);
+}
+
+/**
+ * Wait for MSAL tokens to be stored in localStorage
+ * This ensures SPAs have time to initialize and store authentication tokens
+ */
+async function waitForMsalTokens(
+  page: Page,
+  timeoutMs: number = 30000
+): Promise<boolean> {
+  log(`[MsAuth] Waiting for MSAL tokens in localStorage (timeout: ${timeoutMs}ms)`);
+
+  try {
+    // Poll localStorage for MSAL-related keys
+    await page.waitForFunction(
+      `() => {
+        const keys = Object.keys(localStorage);
+        const hasMsalKeys = keys.some(key =>
+          key.startsWith('msal.') ||
+          key.includes('accessToken') ||
+          key.includes('idToken') ||
+          key.includes('account') ||
+          key.includes('.login.windows.net') ||
+          key.includes('.microsoftonline.com')
+        );
+        return hasMsalKeys && keys.length > 0;
+      }`,
+      { timeout: timeoutMs }
+    );
+
+    // Log found keys for debugging
+    const msalKeys = await page.evaluate(`() => {
+      return Object.keys(localStorage).filter(key =>
+        key.startsWith('msal.') ||
+        key.includes('accessToken') ||
+        key.includes('idToken') ||
+        key.includes('account') ||
+        key.includes('.login.windows.net') ||
+        key.includes('.microsoftonline.com')
+      );
+    }`) as string[];
+
+    log(`[MsAuth] Found ${msalKeys.length} MSAL-related localStorage keys`);
+    if (msalKeys.length > 0) {
+      log(`[MsAuth] MSAL keys: ${msalKeys.slice(0, 5).join(', ')}${msalKeys.length > 5 ? '...' : ''}`);
+    }
+
+    return true;
+  } catch (error) {
+    log(`[MsAuth] ##[warning]Timeout waiting for MSAL tokens - tokens may not be present in localStorage`);
+
+    // Log what's actually in localStorage for debugging
+    const allKeys = await page.evaluate(`() => Object.keys(localStorage)`).catch(() => []) as string[];
+    log(`[MsAuth] Found ${allKeys.length} total localStorage keys: ${allKeys.slice(0, 10).join(', ')}${allKeys.length > 10 ? '...' : ''}`);
+
+    return false;
+  }
 }
 
 /**

@@ -250,6 +250,8 @@ All configuration can be provided via environment variables. Run `npx ms-auth en
 - `MS_AUTH_OUTPUT_DIR` - Directory for storage state files (defaults to project root)
 - `MS_AUTH_LOGIN_ENDPOINT` - Entra endpoint (default: `login.microsoftonline.com`)
 - `MS_AUTH_STORAGE_STATE_EXPIRATION` - Hours until state expires (default: 24)
+- `MS_AUTH_WAIT_FOR_MSAL_TOKENS` - Wait for MSAL tokens in localStorage (`true`/`false`, default: `true`)
+- `MS_AUTH_MSAL_TOKEN_TIMEOUT` - Max time to wait for MSAL tokens in milliseconds (default: 30000)
 - `SYSTEM_DEBUG` - Enable detailed debug logging (`true`/`false`, default: `false`)
 
 ### Debugging
@@ -703,6 +705,48 @@ ls -la .playwright-ms-auth/state-*.json
 
 # View file contents (check cookies)
 cat .playwright-ms-auth/state-*.json
+```
+
+**Q: Authentication succeeds but no MSAL tokens in localStorage**
+
+A: This issue commonly occurs with Single Page Applications (SPAs) like Power Platform, where the app needs time to initialize MSAL and write tokens to localStorage after authentication completes.
+
+By default, the library waits up to 30 seconds for MSAL tokens to appear in localStorage before saving the storage state. If your app takes longer, you can increase the timeout:
+
+```bash
+# Increase MSAL token timeout to 60 seconds
+export MS_AUTH_MSAL_TOKEN_TIMEOUT=60000
+npx ms-auth login --url https://your-spa.com --email user@company.com --password "pwd"
+
+# Or disable MSAL token waiting entirely (not recommended for SPAs)
+export MS_AUTH_WAIT_FOR_MSAL_TOKENS=false
+npx ms-auth login --url https://your-spa.com --email user@company.com --password "pwd"
+```
+
+Programmatically:
+
+```typescript
+const config: MsAuthConfig = {
+  email: "user@company.com",
+  credentialType: "password",
+  credentialProvider: "environment",
+  providerConfig: { variableName: "MY_PASSWORD" },
+  waitForMsalTokens: true,  // default: true
+  msalTokenTimeout: 60000,  // default: 30000 (30 seconds)
+};
+
+await authenticate(config, "https://your-spa.com");
+```
+
+The library looks for common MSAL storage patterns in localStorage:
+- Keys starting with `msal.` (MSAL.js v1)
+- Keys containing `accessToken`, `idToken`, `account`
+- Keys containing `.login.windows.net` or `.microsoftonline.com`
+
+Enable debug logging to see which keys were found:
+
+```bash
+SYSTEM_DEBUG=true npx ms-auth login --url https://your-spa.com --email user@company.com --password "pwd"
 ```
 
 **Q: Getting "Cannot find module" errors**
