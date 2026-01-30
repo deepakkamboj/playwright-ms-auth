@@ -381,7 +381,7 @@ async function waitForMsalTokens(
     );
 
     // Log found keys for debugging
-    const msalKeys = await page.evaluate(`() => {
+    const msalKeys = (await page.evaluate(`() => {
       return Object.keys(localStorage).filter(key =>
         key.startsWith('msal.') ||
         key.includes('accessToken') ||
@@ -390,7 +390,7 @@ async function waitForMsalTokens(
         key.includes('.login.windows.net') ||
         key.includes('.microsoftonline.com')
       );
-    }`) as string[];
+    }`).catch(() => [])) as string[] || [];
 
     log(`[MsAuth] Found ${msalKeys.length} MSAL-related localStorage keys`);
     if (msalKeys.length > 0) {
@@ -402,7 +402,7 @@ async function waitForMsalTokens(
     log(`[MsAuth] ##[warning]Timeout waiting for MSAL tokens - tokens may not be present in localStorage`);
 
     // Log what's actually in localStorage for debugging
-    const allKeys = await page.evaluate(`() => Object.keys(localStorage)`).catch(() => []) as string[];
+    const allKeys = (await page.evaluate(`() => Object.keys(localStorage)`).catch(() => [])) as string[] || [];
     log(`[MsAuth] Found ${allKeys.length} total localStorage keys: ${allKeys.slice(0, 10).join(', ')}${allKeys.length > 10 ? '...' : ''}`);
 
     return false;
