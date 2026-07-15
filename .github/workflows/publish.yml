@@ -29,9 +29,11 @@ jobs:
               run: npm ci
 
             - name: Verify npm authentication
-              run: npm whoami || echo "npm auth check skipped"
+              run: |
+                  npm ping
+                  npm whoami
               env:
-                  NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN || secrets.NPM_TOKEN }}
 
             - name: Extract version from tag
               run: |
@@ -57,4 +59,4 @@ jobs:
             - name: Publish to npm
               run: npm publish --access public --provenance
               env:
-                  NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN || secrets.NPM_TOKEN }}

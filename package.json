@@ -12,7 +12,7 @@
     }
   },
   "bin": {
-    "ms-auth": "./bin/ms-auth"
+    "ms-auth": "bin/ms-auth"
   },
   "files": [
     "lib",
@@ -20,6 +20,10 @@
     "README.md",
     "LICENSE"
   ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "scripts": {
     "build": "tsc",
     "clean": "rimraf lib",
