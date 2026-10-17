@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">Playwright MS Auth logo</title>
+  <desc id="desc">A white shield with a keyhole and verification check on a forest-green rounded square.</desc>
+  <rect width="128" height="128" rx="30" fill="#184e40"/>
+  <path d="M64 23 96 35v25c0 22-14 37-32 45-18-8-32-23-32-45V35Z" fill="none" stroke="#ffffff" stroke-width="5" stroke-linejoin="round"/>
+  <circle cx="64" cy="53" r="8" fill="#ffffff"/>
+  <path d="M61 58h6l3 17H58Z" fill="#ffffff"/>
+  <circle cx="94" cy="93" r="21" fill="#d9f5e7" stroke="#184e40" stroke-width="4"/>
+  <path d="m84 93 7 7 13-14" fill="none" stroke="#184e40" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

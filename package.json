@@ -17,6 +17,7 @@
   "files": [
     "lib",
     "bin",
+    "assets",
     "README.md",
     "LICENSE"
   ],
@@ -49,10 +50,10 @@
   },
   "homepage": "https://github.com/deepakkamboj/playwright-ms-auth#readme",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "devDependencies": {
-    "@playwright/test": "^1.44.1",
+    "@playwright/test": "1.64.0",
     "@types/node": "^20.12.6",
     "dotenv": "^16.4.5",
     "rimraf": "^5.0.0",
@@ -65,6 +66,6 @@
     "commander": "^11.0.0"
   },
   "peerDependencies": {
-    "@playwright/test": "^1.40.1"
+    "@playwright/test": "^1.64.0"
   }
 }
