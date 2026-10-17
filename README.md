@@ -1,25 +1,46 @@
-# Playwright Microsoft Authentication
+<p align="center">
+  <img src="./assets/banner.svg" alt="Playwright MS Auth - Authenticate once. Test with confidence." width="640">
+</p>
 
-[![CI](https://github.com/deepakkamboj/playwright-ms-auth/actions/workflows/ci.yml/badge.svg)](https://github.com/deepakkamboj/playwright-ms-auth/actions/workflows/ci.yml)
-[![NPM Version](https://img.shields.io/npm/v/playwright-ms-auth.svg)](https://www.npmjs.com/package/playwright-ms-auth)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18-brightgreen)](https://nodejs.org/)
+<h1 align="center">Playwright Microsoft Authentication</h1>
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.4-blue?logo=typescript)](https://www.typescriptlang.org/)
-[![Playwright](https://img.shields.io/badge/Playwright-1.44-green?logo=playwright)](https://playwright.dev/)
-[![Azure](https://img.shields.io/badge/Azure-KeyVault-0078D4?logo=microsoftazure)](https://azure.microsoft.com/)
+<p align="center">
+  <a href="https://github.com/deepakkamboj/playwright-ms-auth/actions/workflows/ci.yml"><img src="https://github.com/deepakkamboj/playwright-ms-auth/actions/workflows/ci.yml/badge.svg" alt="CI Pipeline status"></a>
+  <a href="https://www.npmjs.com/package/playwright-ms-auth"><img src="https://img.shields.io/npm/v/playwright-ms-auth.svg?label=npm&amp;color=cb6432" alt="npm package version"></a>
+  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.4%2B-3178c6" alt="TypeScript 5.4 or newer"></a>
+  <a href="https://playwright.dev/"><img src="https://img.shields.io/badge/Playwright-1.64.0-2e7d32" alt="Playwright 1.64.0"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-806600" alt="License: MIT"></a>
+  <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/Node.js-20%2B-437d24" alt="Node.js 20 or newer"></a>
+</p>
 
-> Enterprise-grade authentication solution for Playwright E2E tests with Microsoft Entra ID (formerly Azure AD)
+<p align="center">
+  <strong>Simplify Microsoft sign-in for Playwright tests with reusable sessions and flexible credential providers.</strong>
+</p>
 
-A robust, production-ready authentication framework that simplifies Microsoft identity integration in Playwright test suites. Built with the Abstract Factory pattern, it supports both password and certificate-based authentication across multiple credential providers including Azure KeyVault, local files, environment variables, and GitHub Secrets.
+**Playwright Microsoft Authentication** is an authentication framework for Playwright E2E tests with Microsoft Entra ID (formerly Azure AD). Built on a provider-based architecture, it supports password and certificate authentication with credentials from Azure Key Vault, local files, environment variables, and GitHub Secrets.
 
-Perfect for enterprise test automation requiring secure, reusable authentication flows with multi-region support and smart session caching. Get started in seconds with just email and password, or use enterprise-grade providers like Azure KeyVault for production.
+Start with a simple CLI command or integrate authentication into your test fixtures. Reuse saved browser sessions across test runs, configure regional endpoints, and choose the credential provider that fits your environment.
+
+## Why Choose Playwright MS Auth?
+
+- 🔐 **Flexible Authentication** - Password and certificate-based sign-in for Microsoft Entra ID.
+- 🏭 **Pluggable Providers** - Switch between Azure Key Vault, local files, environment variables, and GitHub Secrets.
+- 💾 **Reusable Sessions** - Cache Playwright storage state with expiration management to reduce repeated sign-ins.
+- 🌍 **Multi-Region Support** - Configure authentication for different Microsoft Entra endpoints.
+- 🔧 **CLI and Test Fixtures** - Authenticate from the command line or integrate with your Playwright test setup.
+- 🌳 **Environment-Based Configuration** - Configure authentication without hardcoding credentials in test source.
+- 📝 **TypeScript Support** - Typed configuration and APIs for your test projects.
+- 🐛 **Debug Logging** - Troubleshoot authentication flows with built-in logging.
+
+## Quick Links
+
+[Installation](#installation) · [Quick Start](#quick-start) · [Credential Providers](#credential-providers) · [Examples](./examples/README.md)
 
 ## Tech Stack
 
 ### Core Dependencies
 
-- **[Playwright](https://playwright.dev/)** (v1.44.1) - Browser automation framework
+- **[Playwright](https://playwright.dev/)** (v1.64.0) - Browser automation framework
 - **[TypeScript](https://www.typescriptlang.org/)** (v5.4.4) - Type-safe development
 - **[Commander.js](https://github.com/tj/commander.js)** (v11.0.0) - CLI framework
 - **[@azure/keyvault-secrets](https://www.npmjs.com/package/@azure/keyvault-secrets)** (v4.8.0) - Azure KeyVault integration
@@ -27,26 +48,13 @@ Perfect for enterprise test automation requiring secure, reusable authentication
 
 ### Runtime Requirements
 
-- **Node.js** ≥18
+- **Node.js** ≥20
 - **Playwright Chromium** browser
 
 ### Build & Development
 
 - **TypeScript Compiler** - ES2020 target, ESM modules
 - **Rimraf** - Cross-platform file cleanup
-
-## Features
-
-- 🔐 **Multiple Authentication Methods**: Password and certificate-based authentication
-- 🏭 **Abstract Factory Pattern**: Easily extensible credential provider system
-- ☁️ **Multiple Providers**: Azure KeyVault, Local File, Environment Variables, GitHub Secrets
-- 🌍 **Multi-Region Support**: Works with different Microsoft Entra endpoints
-- 🔧 **CLI Tool**: Full-featured command-line interface with direct password support
-- 🌳 **Environment Variables**: Complete configuration via environment variables
-- 💾 **Smart Caching**: Automatic storage state management with expiration
-- 📝 **TypeScript**: Full type safety and IntelliSense support
-- 🐛 **Debug Logging**: Comprehensive logging for troubleshooting
-- ⚡ **Zero Config for Simple Cases**: Just email and password to get started
 
 ## Installation
 
