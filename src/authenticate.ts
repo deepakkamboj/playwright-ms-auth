@@ -139,7 +139,10 @@ async function performAuthenticationFlow(
         page,
         credential.value as Buffer,
         actualEndpoint,
-        config.email
+        config.email,
+        "certificatePassword" in config.providerConfig
+          ? config.providerConfig.certificatePassword
+          : undefined
       );
     } else {
       await handlePasswordAuth(page, credential.value as string, config.email);
@@ -229,7 +232,8 @@ async function handleCertificateAuth(
   page: Page,
   certificate: Buffer,
   endpoint: string,
-  email: string
+  email: string,
+  passphrase?: string
 ): Promise<void> {
   log(`[MsAuth] Using certificate authentication`);
 
@@ -241,7 +245,7 @@ async function handleCertificateAuth(
   log(`[MsAuth] Certificate size: ${certificate.byteLength} bytes`);
 
   // Add certificate authentication route
-  await addCertAuthRoute(page, { pfx: certificate, authEndpoint: endpoint });
+  await addCertAuthRoute(page, { pfx: certificate, passphrase, authEndpoint: endpoint });
 
   // Handle account type selection if needed
   const workOrSchoolButton = page.getByRole("button", {
